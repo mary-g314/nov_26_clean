@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekend Reset</title>
+<style>
+:root { color-scheme: light; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one column. A single "next up" card on top, then rooms in the order you will walk them. */
+:root {
+  --bg: #FDF2F6;
+  --surface: #FFFFFF;
+  --ink: #2B1420;
+  --muted: #7A5566;
+  --line: #F1D3DE;
+  --accent: #C2185B;
+  --accent-ink: #FFFFFF;
+  --sun: #9A5B0B;
+  --sun-soft: #FBEBD0;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Space Grotesk", "Inter", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1F0F17;
+    --surface: #2B1A24;
+    --ink: #FBE9F1;
+    --muted: #C9A3B5;
+    --line: #432833;
+    --accent: #FF8FB8;
+    --accent-ink: #3A0A1F;
+    --sun: #F2B259;
+    --sun-soft: #3A2B12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1F0F17;
+  --surface: #2B1A24;
+  --ink: #FBE9F1;
+  --muted: #C9A3B5;
+  --line: #432833;
+  --accent: #FF8FB8;
+  --accent-ink: #3A0A1F;
+  --sun: #F2B259;
+  --sun-soft: #3A2B12;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 20px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+#app { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+.eyebrow { margin: 0; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { margin: 4px 0 6px; font-family: var(--font-head); font-size: 2.1rem; line-height: 1.1; font-weight: 700; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); }
+
+.progress { display: flex; flex-direction: column; gap: 8px; }
+.bar { height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+.prog-text { margin: 0; font-size: 0.92rem; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.focus { background: var(--surface); border: 2px solid var(--accent); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.focus .label { margin: 0; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+.focus h2 { margin: 0; font-family: var(--font-head); font-size: 1.7rem; line-height: 1.2; font-weight: 700; text-wrap: balance; }
+.focus .tip { margin: 0; }
+.focus .meta { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+button { font: inherit; cursor: pointer; }
+.btn { min-height: 48px; padding: 0 20px; border-radius: 12px; border: 2px solid var(--accent); font-weight: 600; background: transparent; color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.small { min-height: 40px; padding: 0 14px; font-size: 0.92rem; border-color: var(--line); }
+.btn:focus-visible, .opt input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.timer { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line); }
+.timer-label { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.92rem; }
+
+#groups { display: flex; flex-direction: column; gap: 24px; }
+.ghead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+.ghead h3 { margin: 0; font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; }
+.gcount { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gcount.ok { color: var(--accent); font-weight: 600; }
+.gnote { margin: 0 0 8px; color: var(--muted); font-size: 0.92rem; }
+ul.rows { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.row + .row { border-top: 1px solid var(--line); }
+.row label { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; cursor: pointer; }
+.row .txt { overflow-wrap: anywhere; }
+.row .min { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row.done .txt { color: var(--muted); text-decoration: line-through; }
+.row.done .min { opacity: 0.6; }
+.later h3 { color: var(--sun); }
+.later .gcount { color: var(--sun); font-weight: 600; }
+.later .gcount.ok { color: var(--accent); }
+.later ul.rows { border-color: var(--sun); }
+.hide-done .row.done, .hide-done .group.complete { display: none; }
+
+input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 24px; height: 24px; margin: 0;
+  border: 2px solid var(--muted); border-radius: 7px; background: var(--surface);
+  display: grid; place-content: center; cursor: pointer;
+}
+input[type="checkbox"]::after {
+  content: ""; width: 6px; height: 12px;
+  border: solid var(--accent-ink); border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px); opacity: 0;
+}
+input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+input[type="checkbox"]:checked::after { opacity: 1; }
+.row input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.foot { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.opt { display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 44px; }
+.status { margin: 0; font-size: 0.85rem; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<main id="app">
+  <header>
+    <p class="eyebrow">Saturday cleanup</p>
+    <h1>Weekend Reset</h1>
+    <p class="lede" id="summary"></p>
+  </header>
+
+  <section class="progress" aria-label="Progress">
+    <div class="bar" id="bar" role="progressbar" aria-label="Tasks finished today" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="barfill"></span></div>
+    <p class="prog-text" id="progtext" aria-live="polite"></p>
+  </section>
+
+  <section class="focus" aria-labelledby="fTitle">
+    <p class="label" id="fLabel">Next up</p>
+    <h2 id="fTitle"></h2>
+    <p class="tip" id="fTip"></p>
+    <p class="meta" id="fMeta"></p>
+    <div class="actions" id="fActions">
+      <button class="btn primary" id="doneBtn" type="button">Done</button>
+      <button class="btn" id="skipBtn" type="button">Skip for now</button>
+    </div>
+    <div class="timer" id="timerRow">
+      <button class="btn small" id="timerBtn" type="button">Start 10-min timer</button>
+      <span class="timer-label" id="timerLabel" role="timer"></span>
+    </div>
+  </section>
+
+  <div id="groups"></div>
+
+  <footer class="foot">
+    <div class="foot-row">
+      <label class="opt"><input type="checkbox" id="hideDone"><span>Hide finished tasks</span></label>
+      <button class="btn small" id="resetBtn" type="button">Start over</button>
+    </div>
+    <p class="status" id="status">Progress saves on this device.</p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var GROUPS = [
+    { id: "start", name: "Start here", note: "One minute. Gets you moving." },
+    { id: "bed", name: "Bedroom and closet", note: "Easy wins first." },
+    { id: "bath", name: "Bathroom", note: "Bags out, then mop." },
+    { id: "kitchen", name: "Kitchen", note: "Clear the counter, then the ice machine goes in." },
+    { id: "living", name: "Living area", note: "Unpacking comes last because it makes the most mess." },
+    { id: "litter", name: "Litter box", note: "Empty it, then refill it." },
+    { id: "trash", name: "Trash run", note: "One trip for everything by the door." },
+    { id: "sunday", name: "Sunday night", note: "Not today. Leave it for tomorrow night." }
+  ];
+
+  var TASKS = [
+    { id: "s1", g: "start", m: 1, t: "Grab a trash bag and put on music or a podcast", tip: "Carry the bag with you from room to room. Set full bags by the front door." },
+
+    { id: "b1", g: "bed", m: 3, t: "Put all laundry in the hamper", tip: "Don't sort anything. Just get it into the hamper." },
+    { id: "b2", g: "bed", m: 5, t: "Clean the clutter off the bed", tip: "Trash goes in your bag. If something has no home, put it in one pile on the floor and decide later." },
+    { id: "b3", g: "bed", m: 3, t: "Throw out the trash from the closet", tip: "Use the bag you are already carrying." },
+    { id: "b4", g: "bed", m: 2, t: "Move the suitcase into the closet or out of the way", tip: "The closet trash is gone, so there is room now." },
+
+    { id: "ba1", g: "bath", m: 3, t: "Get all trash bags out of the bathroom", tip: "Set them by the front door. They go out in the trash run." },
+    { id: "ba2", g: "bath", m: 10, t: "Mop the bathroom floor", tip: "The bags are out of the way, so this is the last thing to do in here." },
+
+    { id: "k1", g: "kitchen", m: 5, t: "Throw away all trash in the kitchen", tip: "Bag it and set it by the front door." },
+    { id: "k2", g: "kitchen", m: 5, t: "Put away or throw away all sauces on the counter", tip: "One question per sauce: keep or toss? Skip reorganizing the fridge today." },
+    { id: "k3", g: "kitchen", m: 2, t: "Move the old espresso machine off the counter", tip: "Set it by the front door, apart from the trash bags. It goes outside Sunday night." },
+    { id: "k4", g: "kitchen", m: 10, t: "Set up the ice machine where the espresso machine was", tip: "Wipe the spot first, then put the ice machine down." },
+
+    { id: "l1", g: "living", m: 5, t: "Throw away all trash in the living area", tip: "Bag it and set it by the front door." },
+    { id: "l2", g: "living", m: 5, t: "Move all packages into the living area", tip: "Just carry them in. Don't open anything yet, and keep them off the stain." },
+    { id: "l3", g: "living", m: 15, t: "Clean the puke stain on the rug", tip: "Treat it, let it sit about 10 minutes, then blot. Use the timer and tidy something small nearby while you wait." },
+    { id: "l4", g: "living", m: 20, t: "Unpack all packages", tip: "Flatten boxes as you go and stack them by the front door with the trash." },
+
+    { id: "li1", g: "litter", m: 5, t: "Empty the litter box", tip: "Bag the dirty litter and set it by the front door." },
+    { id: "li2", g: "litter", m: 3, t: "Refill the litter box" },
+
+    { id: "t1", g: "trash", m: 5, t: "Take all trash bags and boxes out", tip: "Bathroom, kitchen, living area, closet, litter bag, and flattened boxes. Leave the espresso machine for Sunday." },
+
+    { id: "su1", g: "sunday", m: 5, t: "Put the old espresso machine outside", tip: "It is waiting by the front door." }
+  ];
+
+  var TODAY = TASKS.filter(function (t) { return t.g !== "sunday"; });
+  var LATER = TASKS.filter(function (t) { return t.g === "sunday"; });
+  var LS = "weekend-reset-done";
+
+  var done = {};
+  try {
+    var raw = localStorage.getItem(LS);
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p === "object") done = p; }
+  } catch (e) {}
+  var skipped = new Set();
+  var currentId = null;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function fmt(min) {
+    if (min < 60) return min + " min";
+    var h = Math.floor(min / 60), m = min % 60;
+    return h + " hr" + (m ? " " + m + " min" : "");
+  }
+  function groupName(id) {
+    for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i].id === id) return GROUPS[i].name;
+    return "";
+  }
+  function setStatus(txt) { $("status").textContent = txt; }
+
+  /* ---------- build the list once ---------- */
+  var rows = {};
+  var groupEls = {};
+  var list = $("groups");
+  GROUPS.forEach(function (g) {
+    var sec = el("section", "group" + (g.id === "sunday" ? " later" : ""));
+    var head = el("div", "ghead");
+    head.appendChild(el("h3", "", g.name));
+    var count = el("span", "gcount", "");
+    head.appendChild(count);
+    sec.appendChild(head);
+    sec.appendChild(el("p", "gnote", g.note));
+    var ul = el("ul", "rows");
+    TASKS.filter(function (t) { return t.g === g.id; }).forEach(function (t) {
+      var li = el("li", "row");
+      var label = el("label");
+      var input = document.createElement("input");
+      input.type = "checkbox";
+      input.id = "cb-" + t.id;
+      input.addEventListener("change", function () { setDone(t.id, input.checked); });
+      label.appendChild(input);
+      label.appendChild(el("span", "txt", t.t));
+      label.appendChild(el("span", "min", t.m + " min"));
+      li.appendChild(label);
+      ul.appendChild(li);
+      rows[t.id] = { li: li, input: input };
+    });
+    sec.appendChild(ul);
+    list.appendChild(sec);
+    groupEls[g.id] = { sec: sec, count: count };
+  });
+
+  var totalMin = TODAY.reduce(function (a, t) { return a + t.m; }, 0);
+  $("summary").textContent = TODAY.length + " tasks today, about " + fmt(totalMin) + " in all. One more waits for Sunday night.";
+
+  /* ---------- state changes ---------- */
+  function setDone(id, v) {
+    if (v) done[id] = true; else delete done[id];
+    save();
+    update();
+  }
+
+  function nextTask() {
+    var open = TODAY.filter(function (t) { return !done[t.id]; });
+    if (!open.length) return { task: null, openCount: 0 };
+    var c = open.filter(function (t) { return !skipped.has(t.id); })[0];
+    if (!c) { skipped.clear(); c = open[0]; }
+    return { task: c, openCount: open.length };
+  }
+
+  function update() {
+    var doneToday = TODAY.filter(function (t) { return done[t.id]; }).length;
+    var left = TODAY.reduce(function (a, t) { return a + (done[t.id] ? 0 : t.m); }, 0);
+    var pct = Math.round(100 * doneToday / TODAY.length);
+    $("barfill").style.width = pct + "%";
+    $("bar").setAttribute("aria-valuenow", String(pct));
+    $("progtext").textContent = doneToday + " of " + TODAY.length + " done" + (left ? " · about " + fmt(left) + " left" : "");
+
+    TASKS.forEach(function (t) {
+      var r = rows[t.id];
+      var d = !!done[t.id];
+      r.li.classList.toggle("done", d);
+      r.input.checked = d;
+    });
+
+    GROUPS.forEach(function (g) {
+      var items = TASKS.filter(function (t) { return t.g === g.id; });
+      var n = items.filter(function (t) { return done[t.id]; }).length;
+      var complete = n === items.length;
+      var ge = groupEls[g.id];
+      ge.sec.classList.toggle("complete", complete);
+      ge.count.classList.toggle("ok", complete);
+      if (complete) ge.count.textContent = "Done";
+      else if (g.id === "sunday") ge.count.textContent = "Sunday";
+      else ge.count.textContent = n + "/" + items.length;
+    });
+
+    var nx = nextTask();
+    var task = nx.task;
+    currentId = task ? task.id : null;
+    if (task) {
+      $("fLabel").textContent = "Next up";
+      $("fTitle").textContent = task.t;
+      $("fTip").textContent = task.tip || "";
+      $("fTip").hidden = !task.tip;
+      $("fMeta").textContent = "About " + fmt(task.m) + " · " + groupName(task.g);
+      $("fActions").hidden = false;
+      $("timerRow").hidden = false;
+      $("skipBtn").hidden = nx.openCount < 2;
+    } else {
+      var laterOpen = LATER.filter(function (t) { return !done[t.id]; })[0];
+      $("fLabel").textContent = "All done for today";
+      $("fTitle").textContent = "Today's list is finished";
+      if (laterOpen) {
+        var s = laterOpen.t;
+        $("fTip").textContent = "Still on the list for Sunday night: " + s.charAt(0).toLowerCase() + s.slice(1) + ".";
+      } else {
+        $("fTip").textContent = "Everything on the list is checked off.";
+      }
+      $("fTip").hidden = false;
+      $("fMeta").textContent = "";
+      $("fActions").hidden = true;
+      $("timerRow").hidden = true;
+      stopTimer();
+    }
+  }
+
+  /* ---------- saving ---------- */
+  var ref = null, writing = false, pending = false;
+  function save() {
+    try { localStorage.setItem(LS, JSON.stringify(done)); } catch (e) {}
+    if (!ref) return;
+    pending = true;
+    if (!writing) flush();
+  }
+  async function flush() {
+    writing = true;
+    while (pending) {
+      pending = false;
+      try { await ref.set({ done: Object.assign({}, done) }); }
+      catch (e) { setStatus("Could not save to your account. Progress is kept on this device."); }
+    }
+    writing = false;
+  }
+
+  /* ---------- timer ---------- */
+  var tEnd = 0, tInt = 0;
+  function stopTimer() {
+    if (tInt) clearInterval(tInt);
+    tInt = 0; tEnd = 0;
+    $("timerLabel").textContent = "";
+    $("timerBtn").textContent = "Start 10-min timer";
+  }
+  function tickTimer() {
+    var r = tEnd - Date.now();
+    if (r <= 0) {
+      clearInterval(tInt); tInt = 0; tEnd = 0;
+      $("timerLabel").textContent = "Time is up. Keep going or take a break.";
+      $("timerBtn").textContent = "Start 10-min timer";
+      return;
+    }
+    var s = Math.ceil(r / 1000);
+    $("timerLabel").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") + " left";
+  }
+  $("timerBtn").addEventListener("click", function () {
+    if (tInt) { stopTimer(); return; }
+    tEnd = Date.now() + 10 * 60 * 1000;
+    tInt = setInterval(tickTimer, 1000);
+    tickTimer();
+    $("timerBtn").textContent = "Stop timer";
+  });
+
+  /* ---------- buttons ---------- */
+  $("doneBtn").addEventListener("click", function () { if (currentId) setDone(currentId, true); });
+  $("skipBtn").addEventListener("click", function () {
+    if (currentId) { skipped.add(currentId); update(); }
+  });
+  $("hideDone").addEventListener("change", function (e) {
+    $("app").classList.toggle("hide-done", e.target.checked);
+  });
+  var resetArmed = 0;
+  $("resetBtn").addEventListener("click", function () {
+    var btn = $("resetBtn");
+    if (!resetArmed) {
+      btn.textContent = "Tap again to clear every check";
+      resetArmed = setTimeout(function () { resetArmed = 0; btn.textContent = "Start over"; }, 4000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = 0;
+    btn.textContent = "Start over";
+    done = {}; skipped.clear();
+    save(); update();
+  });
+
+  update();
+
+  /* ---------- sync across devices ---------- */
+  (async function () {
+    try {
+      if (!window.claude || typeof window.claude.use !== "function") return;
+      var db = await window.claude.use("db");
+      if (!db) return;
+      ref = db.doc("checklist/progress");
+      setStatus("Progress saves automatically and follows you across devices.");
+      var slow = setTimeout(function () {
+        setStatus("Can't reach your saved progress yet. Showing what this device remembers.");
+      }, 10000);
+      ref.onSnapshot(function (snap) {
+        if (!snap.metadata.fromCache) {
+          clearTimeout(slow);
+          setStatus("Progress saves automatically and follows you across devices.");
+        }
+        if (writing || pending || snap.metadata.hasPendingWrites) return;
+        if (snap.exists) {
+          var d = snap.data();
+          if (d && d.done && typeof d.done === "object") {
+            done = Object.assign({}, d.done);
+            try { localStorage.setItem(LS, JSON.stringify(done)); } catch (e) {}
+            update();
+          }
+        }
+      }, function () {
+        clearTimeout(slow);
+        setStatus("Could not load saved progress. Progress is kept on this device.");
+      });
+    } catch (e) {}
+  })();
+})();
+</script>
+</body>
+</html>
